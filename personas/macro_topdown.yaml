@@ -1,0 +1,18 @@
+name: macro_topdown
+display_name: "Macro Top-Down"
+horizon: "6M"
+
+weights:
+  macro_score:       0.50
+  sector_rotation:   0.30
+  rates_sensitivity: 0.20
+
+sentiment_delta: 0.05
+
+data_sources:
+  - macro
+  - fundamentals
+  - sector_etf
+
+pt_method: relative_value
+confidence_threshold: 0.60

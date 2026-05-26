@@ -1,0 +1,17 @@
+name: quant_momentum
+display_name: "Quant Momentum"
+horizon: "1M"
+
+weights:
+  momentum_score: 0.50
+  vol_regime:     0.30
+  beta_exposure:  0.20
+
+sentiment_delta: 0.05
+
+data_sources:
+  - ohlcv
+  - options_flow
+
+pt_method: relative_value
+confidence_threshold: 0.65

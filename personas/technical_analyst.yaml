@@ -1,0 +1,17 @@
+name: technical_analyst
+display_name: "Technical Analyst"
+horizon: "3M"
+
+weights:
+  rsi_signal:     0.30
+  macd_signal:    0.30
+  breakout_score: 0.25
+  volume_surge:   0.15
+
+sentiment_delta: 0.03
+
+data_sources:
+  - ohlcv
+
+pt_method: relative_value
+confidence_threshold: 0.60

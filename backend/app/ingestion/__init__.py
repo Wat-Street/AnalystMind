@@ -1,0 +1,1 @@
+# Can make this for the DB initalization etc. We can also have some helper functions in here as well that we can utilize across the different ingestion scripts. This is just a starting point and we can build on it as we go along. - Kunal

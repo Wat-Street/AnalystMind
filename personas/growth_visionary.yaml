@@ -1,0 +1,18 @@
+name: growth_visionary
+display_name: "Growth Visionary"
+horizon: "5Y"
+
+weights:
+  forward_pe:   0.45
+  tam_score:    0.35
+  revenue_cagr: 0.20
+
+sentiment_delta: 0.05
+
+data_sources:
+  - fundamentals
+  - transcripts
+  - earnings
+
+pt_method: ev_multiples
+confidence_threshold: 0.55

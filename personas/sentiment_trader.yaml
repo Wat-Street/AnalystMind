@@ -1,0 +1,18 @@
+name: sentiment_trader
+display_name: "Sentiment Trader"
+horizon: "1M"
+
+weights:
+  tone_score:      0.50
+  coverage_volume: 0.30
+  news_delta:      0.20
+
+sentiment_delta: 0.05
+
+data_sources:
+  - transcripts
+  - news
+  - analyst_ratings
+
+pt_method: relative_value
+confidence_threshold: 0.55

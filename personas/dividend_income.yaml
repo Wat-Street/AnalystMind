@@ -1,0 +1,18 @@
+name: dividend_income
+display_name: "Dividend & Income"
+horizon: "3Y"
+
+weights:
+  dividend_yield: 0.35
+  payout_ratio:   0.30
+  fcf_coverage:   0.25
+  dividend_cagr:  0.10
+
+sentiment_delta: 0.02
+
+data_sources:
+  - fundamentals
+  - dividends
+
+pt_method: dcf_montecarlo
+confidence_threshold: 0.65

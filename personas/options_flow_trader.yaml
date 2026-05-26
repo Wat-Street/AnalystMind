@@ -1,0 +1,17 @@
+name: options_flow_trader
+display_name: "Options Flow Trader"
+horizon: "2W"
+
+weights:
+  unusual_options_score: 0.40
+  put_call_ratio:        0.30
+  gamma_exposure:        0.30
+
+sentiment_delta: 0.04
+
+data_sources:
+  - options_flow
+  - ohlcv
+
+pt_method: relative_value
+confidence_threshold: 0.60

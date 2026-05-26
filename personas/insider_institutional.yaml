@@ -1,0 +1,17 @@
+name: insider_institutional
+display_name: "Insider & Institutional"
+horizon: "6M"
+
+weights:
+  insider_buy_score:  0.40
+  institutional_flow: 0.35
+  net_insider_delta:  0.25
+
+sentiment_delta: 0.04
+
+data_sources:
+  - insider_activity
+  - fundamentals
+
+pt_method: relative_value
+confidence_threshold: 0.65

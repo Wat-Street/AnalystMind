@@ -1,0 +1,17 @@
+name: value_fundamentalist
+display_name: "Value Fundamentalist"
+horizon: "3Y"
+
+weights:
+  fcf_yield:   0.40
+  trailing_pe: 0.30
+  moat_score:  0.30
+
+sentiment_delta: 0.05
+
+data_sources:
+  - fundamentals
+  - transcripts
+
+pt_method: dcf_montecarlo
+confidence_threshold: 0.60
