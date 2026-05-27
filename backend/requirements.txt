@@ -14,3 +14,5 @@ yfinance
 requests
 python-dotenv
 pyyaml
+pandas-ta
+pytest
