@@ -1,0 +1,44 @@
+[project]
+name = "analystmind"
+version = "0.1.0"
+description = "Multi-agent equity research platform"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "alembic",
+    "psycopg2-binary",
+    "langchain",
+    "langchain-community",
+    "langchain-openai",
+    "pydantic",
+    "pydantic-settings",
+    "transformers",
+    "torch",
+    "yfinance",
+    "requests",
+    "python-dotenv",
+    "pyyaml",
+    "pandas-ta-classic",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "mypy",
+]
+
+[tool.pytest]
+minversion = "9.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

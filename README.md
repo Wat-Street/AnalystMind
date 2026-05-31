@@ -51,7 +51,9 @@ AnalystMind/
 │   └── migrations/                  # Alembic migration files
 └── backend/
     ├── Dockerfile
-    ├── requirements.txt
+    ├── pyproject.toml              # project metadata + dependencies (uv)
+    ├── uv.lock                     # pinned dep graph — committed, reproducible builds
+    ├── .python-version             # pinned to 3.11
     └── app/
         ├── main.py                  # FastAPI entrypoint
         ├── api/
@@ -91,6 +93,26 @@ cd AnalystMind
 cp .env.example .env        # fill in API keys (see Environment variables below)
 docker compose up --build
 ```
+
+### Backend development (outside Docker)
+
+Dependencies are managed with [`uv`](https://docs.astral.sh/uv/). Install uv first
+(`curl -LsSf https://astral.sh/uv/install.sh | sh`), then:
+
+```bash
+cd backend
+uv sync                          # create .venv, install prod + dev deps from uv.lock
+uv run pytest                    # run the test suite
+uv run uvicorn app.main:app      # run the API locally (DB still via docker compose)
+uv add <pkg>                     # add a prod dep — updates pyproject.toml + uv.lock
+uv add --dev <pkg>               # add a dev-only dep
+uv lock --upgrade                # bump all deps within declared ranges
+uv lock --check                  # verify lockfile matches pyproject.toml (CI gate)
+```
+
+The lockfile (`backend/uv.lock`) is committed and is the source of truth for builds.
+The Python version is pinned via `backend/.python-version`; `uv` provisions it
+automatically.
 
 The database connection is configured in `docker-compose.yml` and injected directly into the backend container — no `DATABASE_URL` in `.env` needed. The schema is created automatically on first start via `db/init.sql`.
 
