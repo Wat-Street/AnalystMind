@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backend.app.ingestion.technical_indicators import MIN_ROWS, compute
+from app.ingestion.technical_indicators import MIN_ROWS, compute
 
 
 def _frame(close: np.ndarray, volume: np.ndarray | None = None) -> pd.DataFrame:

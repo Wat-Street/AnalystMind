@@ -9,7 +9,7 @@ import math
 
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+import pandas_ta_classic as ta
 
 RSI_LENGTH = 14
 MACD_FAST = 12
