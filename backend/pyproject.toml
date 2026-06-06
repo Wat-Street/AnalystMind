@@ -21,6 +21,8 @@ dependencies = [
     "python-dotenv",
     "pyyaml",
     "pandas-ta-classic",
+    "pandas",
+    "defeatbeta-api; sys_platform == 'linux'",
 ]
 
 [dependency-groups]
