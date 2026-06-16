@@ -64,6 +64,51 @@ CREATE TABLE IF NOT EXISTS fundamentals (
 CREATE INDEX IF NOT EXISTS idx_fundamentals_ticker        ON fundamentals(ticker);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_fundamentals_ticker_period ON fundamentals(ticker, period);
 
+-- ── analyst_ratings ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS analyst_ratings (
+    id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticker               VARCHAR(10) NOT NULL,
+    as_of_date           DATE        NOT NULL,
+    current_price        NUMERIC,
+    consensus_pt         NUMERIC,
+    target_low           NUMERIC,
+    target_high          NUMERIC,
+    target_median        NUMERIC,
+    price_target_upside  FLOAT,
+    recommendation_score FLOAT       CHECK (recommendation_score IS NULL OR (recommendation_score >= 0 AND recommendation_score <= 1)),
+    coverage_volume      FLOAT       CHECK (coverage_volume IS NULL OR (coverage_volume >= 0 AND coverage_volume <= 1)),
+    recent_rating_delta  FLOAT       CHECK (recent_rating_delta IS NULL OR (recent_rating_delta >= 0 AND recent_rating_delta <= 1)),
+    strong_buy           INTEGER     NOT NULL DEFAULT 0,
+    buy                  INTEGER     NOT NULL DEFAULT 0,
+    hold                 INTEGER     NOT NULL DEFAULT 0,
+    sell                 INTEGER     NOT NULL DEFAULT 0,
+    strong_sell          INTEGER     NOT NULL DEFAULT 0,
+    fetched_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_analyst_ratings_ticker      ON analyst_ratings(ticker);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_analyst_ratings_ticker_date ON analyst_ratings(ticker, as_of_date);
+
+-- ── options_flow ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS options_flow (
+    id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticker                VARCHAR(10) NOT NULL,
+    as_of_date            DATE        NOT NULL,
+    expiration_date       DATE        NOT NULL,
+    underlying_price      NUMERIC,
+    call_volume           BIGINT      NOT NULL DEFAULT 0,
+    put_volume            BIGINT      NOT NULL DEFAULT 0,
+    call_open_interest    BIGINT      NOT NULL DEFAULT 0,
+    put_open_interest     BIGINT      NOT NULL DEFAULT 0,
+    put_call_ratio        FLOAT       CHECK (put_call_ratio IS NULL OR put_call_ratio >= 0),
+    unusual_options_score FLOAT       NOT NULL DEFAULT 0 CHECK (unusual_options_score >= 0 AND unusual_options_score <= 1),
+    gamma_exposure        NUMERIC,
+    fetched_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_options_flow_ticker          ON options_flow(ticker);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_options_flow_ticker_date_exp ON options_flow(ticker, as_of_date, expiration_date);
+
 -- ── macro_series ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS macro_series (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
