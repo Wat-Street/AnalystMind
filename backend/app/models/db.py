@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import (
-    Column, String, Float, BigInteger, Numeric, Text, Date,
+    Column, String, Float, Integer, BigInteger, Numeric, Text, Date,
     DateTime, ForeignKey, CheckConstraint, UniqueConstraint, Index,
     create_engine, text,
 )
@@ -82,6 +82,72 @@ class Fundamentals(Base):
 
     __table_args__ = (
         UniqueConstraint("ticker", "period", name="uq_fundamentals_ticker_period"),
+    )
+
+
+class AnalystRating(Base):
+    __tablename__ = "analyst_ratings"
+
+    id                   = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    ticker               = Column(String(10), nullable=False, index=True)
+    as_of_date           = Column(Date, nullable=False)
+    current_price        = Column(Numeric)
+    consensus_pt         = Column(Numeric)
+    target_low           = Column(Numeric)
+    target_high          = Column(Numeric)
+    target_median        = Column(Numeric)
+    price_target_upside  = Column(Float)
+    recommendation_score = Column(Float)
+    coverage_volume      = Column(Float)
+    recent_rating_delta  = Column(Float)
+    strong_buy           = Column(Integer, nullable=False, server_default=text("0"))
+    buy                  = Column(Integer, nullable=False, server_default=text("0"))
+    hold                 = Column(Integer, nullable=False, server_default=text("0"))
+    sell                 = Column(Integer, nullable=False, server_default=text("0"))
+    strong_sell          = Column(Integer, nullable=False, server_default=text("0"))
+    fetched_at           = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+
+    __table_args__ = (
+        UniqueConstraint("ticker", "as_of_date", name="uq_analyst_ratings_ticker_date"),
+        CheckConstraint(
+            "recommendation_score IS NULL OR (recommendation_score >= 0 AND recommendation_score <= 1)",
+            name="ck_analyst_recommendation_score_range",
+        ),
+        CheckConstraint(
+            "coverage_volume IS NULL OR (coverage_volume >= 0 AND coverage_volume <= 1)",
+            name="ck_analyst_coverage_volume_range",
+        ),
+        CheckConstraint(
+            "recent_rating_delta IS NULL OR (recent_rating_delta >= 0 AND recent_rating_delta <= 1)",
+            name="ck_analyst_recent_delta_range",
+        ),
+    )
+
+
+class OptionsFlow(Base):
+    __tablename__ = "options_flow"
+
+    id                    = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    ticker                = Column(String(10), nullable=False, index=True)
+    as_of_date            = Column(Date, nullable=False)
+    expiration_date       = Column(Date, nullable=False)
+    underlying_price      = Column(Numeric)
+    call_volume           = Column(BigInteger, nullable=False, server_default=text("0"))
+    put_volume            = Column(BigInteger, nullable=False, server_default=text("0"))
+    call_open_interest    = Column(BigInteger, nullable=False, server_default=text("0"))
+    put_open_interest     = Column(BigInteger, nullable=False, server_default=text("0"))
+    put_call_ratio        = Column(Float)
+    unusual_options_score = Column(Float, nullable=False, server_default=text("0"))
+    gamma_exposure        = Column(Numeric)
+    fetched_at            = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+
+    __table_args__ = (
+        UniqueConstraint("ticker", "as_of_date", "expiration_date", name="uq_options_flow_ticker_date_exp"),
+        CheckConstraint("put_call_ratio IS NULL OR put_call_ratio >= 0", name="ck_options_put_call_ratio_nonnegative"),
+        CheckConstraint(
+            "unusual_options_score >= 0 AND unusual_options_score <= 1",
+            name="ck_options_unusual_score_range",
+        ),
     )
 
 
