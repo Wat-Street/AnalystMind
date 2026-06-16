@@ -6,7 +6,7 @@ import re
 from typing import Any
 import pandas as pd
 
-TICKERS = ("AAPL", "MSFT", "NVDA", "TSLA", "AMZN")
+from .ticker_config import load_tickers
 SOURCE = "defeatbeta"
 MIN_FISCAL_YEAR = 2015
 
@@ -152,4 +152,4 @@ def ingest(ticker: str) -> list[dict[str, Any]]:
 
 
 def ingest_all() -> dict[str, list[dict[str, Any]]]:
-    return {ticker: ingest(ticker) for ticker in TICKERS}
+    return {ticker: ingest(ticker) for ticker in load_tickers()}
