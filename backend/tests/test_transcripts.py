@@ -130,32 +130,18 @@ def test_split_segments_pairs_multiple_qa_exchanges():
 
 # build_record
 def test_build_record_contract():
-    rec = build_record("AAPL", 2024, 1, "2024-02-01", _transcript_df(_CALL), "tid-123")
-    assert set(rec.keys()) == {
-        "ticker", "quarter", "source", "source_transcript_id", "report_date", "segments",
-    }
+    rec = build_record("AAPL", 2024, 1, _transcript_df(_CALL))
+    assert set(rec.keys()) == {"ticker", "quarter", "source", "segments"}
     assert rec["ticker"] == "AAPL"
     assert rec["quarter"] == "2024Q1"
     assert rec["source"] == "defeatbeta"
-    assert rec["source_transcript_id"] == "tid-123"
-    assert rec["report_date"] == "2024-02-01"
     assert len(rec["segments"]) == len(_CALL)
     assert {s["role"] for s in rec["segments"]} <= {"management", "qa"}
 
 
-def test_build_record_coerces_transcript_id_to_str():
-    rec = build_record("AAPL", 2024, 1, "2024-02-01", _transcript_df(_CALL), 4567)
-    assert rec["source_transcript_id"] == "4567"
-
-
-def test_build_record_allows_missing_transcript_id():
-    rec = build_record("AAPL", 2024, 1, "2024-02-01", _transcript_df(_CALL))
-    assert rec["source_transcript_id"] is None
-
-
 def test_build_record_rejects_bad_quarter():
     with pytest.raises(ValueError, match="fiscal_quarter"):
-        build_record("AAPL", 2024, 5, "2024-02-01", _transcript_df(_CALL))
+        build_record("AAPL", 2024, 5, _transcript_df(_CALL))
 
 
 #ingest
@@ -164,8 +150,6 @@ def test_ingest_filters_by_min_year_and_builds_records(monkeypatch):
         "symbol":         ["AAPL", "AAPL", "AAPL"],
         "fiscal_year":    [MIN_FISCAL_YEAR - 1, MIN_FISCAL_YEAR, MIN_FISCAL_YEAR + 1],
         "fiscal_quarter": [4, 1, 2],
-        "report_date":    ["2014-01-27", "2015-01-27", "2016-04-26"],
-        "transcripts_id": ["t-old", "t-2015q1", "t-2016q2"],
     })
     monkeypatch.setattr(transcripts, "fetch_transcript_list", lambda t: listing)
     monkeypatch.setattr(transcripts, "fetch_transcript", lambda t, y, q: _transcript_df(_CALL))
@@ -175,4 +159,3 @@ def test_ingest_filters_by_min_year_and_builds_records(monkeypatch):
     assert [r["quarter"] for r in records] == [f"{MIN_FISCAL_YEAR}Q1", f"{MIN_FISCAL_YEAR + 1}Q2"]
     assert all(r["ticker"] == "AAPL" for r in records)
     assert all(r["segments"] for r in records)
-    assert [r["source_transcript_id"] for r in records] == ["t-2015q1", "t-2016q2"]
