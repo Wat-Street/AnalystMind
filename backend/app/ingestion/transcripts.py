@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 import pandas as pd
+from sqlalchemy.orm import Session
 
 from .ticker_config import load_tickers
 SOURCE = "defeatbeta"
@@ -44,6 +45,9 @@ def _classify_speaker_type(speaker: str, role: str, mgmt_speakers: set[str]) -> 
 # transform
 def split_segments(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Tag each transcript paragraph with its section, speaker identity, and Q&A exchange.
+
+    Segments are model-agnostic: one row per paragraph with raw text. chunking
+    is applied later in text_tokenizer
     """
     missing = [c for c in _REQUIRED_COLUMNS if c not in df.columns]
     if missing:
@@ -95,21 +99,16 @@ def build_record(
     ticker: str,
     fiscal_year: int,
     fiscal_quarter: int,
-    report_date: Any,
     transcript_df: pd.DataFrame,
-    source_transcript_id: Any = None,
 ) -> dict[str, Any]:
     if not 1 <= int(fiscal_quarter) <= 4:
         raise ValueError(f"fiscal_quarter must be 1-4, got {fiscal_quarter}")
 
     segments = split_segments(transcript_df)
-    report = pd.to_datetime(report_date, errors="coerce")
     return {
         "ticker": ticker,
         "quarter": f"{int(fiscal_year)}Q{int(fiscal_quarter)}",
         "source": SOURCE,
-        "source_transcript_id": None if source_transcript_id is None else str(source_transcript_id),
-        "report_date": None if pd.isna(report) else report.date().isoformat(),
         "segments": segments,
     }
 
@@ -142,14 +141,35 @@ def ingest(ticker: str) -> list[dict[str, Any]]:
         if year < MIN_FISCAL_YEAR:
             continue
         quarter = int(row["fiscal_quarter"])
-        report_date = row.get("report_date")
-        transcript_id = row.get("transcripts_id")
-        if transcript_id is not None and pd.isna(transcript_id):
-            transcript_id = None
         df = fetch_transcript(ticker, year, quarter)
-        records.append(build_record(ticker, year, quarter, report_date, df, transcript_id))
+        records.append(build_record(ticker, year, quarter, df))
     return records
 
 
 def ingest_all() -> dict[str, list[dict[str, Any]]]:
     return {ticker: ingest(ticker) for ticker in load_tickers()}
+
+
+def upsert_transcripts(session: Session, records: list[dict[str, Any]]) -> int:
+    """Upsert transcript records into the transcripts table keyed on (ticker, quarter)
+
+    Commits the session.  Returns the number of rows upserted.
+    """
+    if not records:
+        return 0
+
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+    from app.models.db import Transcript
+
+    stmt = pg_insert(Transcript).values(records)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["ticker", "quarter"],
+        set_={
+            "source": stmt.excluded.source,
+            "segments": stmt.excluded.segments,
+            "ingested_at": stmt.excluded.ingested_at,
+        },
+    )
+    session.execute(stmt)
+    session.commit()
+    return len(records)
