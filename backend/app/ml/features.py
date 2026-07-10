@@ -35,7 +35,7 @@ FEATURE_ORDER = [
 ]
 
 MODALITY_FEATURES: dict[str, list[int]] = {
-    "valuation": ["fcf_yield", "trailing_pe", "forward_pe", "ev_ebita"], 
+    "valuation": ["fcf_yield", "trailing_pe", "forward_pe", "ev_ebitda"],
     "quality": ["revenue_cagr_3y", "gross_margin", "net_debt_to_ebita"],
     "technical": ["rsi_signal", "macd_signal", "breakout_score", "volume_surge"],
     "momentum": [ "return_21d", "return_63d", "return_126d", "market_relative_strength_63d"],
@@ -56,7 +56,7 @@ MODALITY_GROUPS: dict[str, list[int]] = {
 PERSONA_MODALITIES: dict[str, list[str]] = {
     "value_fundamentalist":  ["valuation", "quality", "insider", "transcript"],
     "growth_visionary":      ["valuation", "quality", "analyst", "transcript"],
-    "quant_momentum":        ["momemntum", "market_risk", "options"],
+    "quant_momentum":        ["momentum", "market_risk", "options"],
     "technical_analyst":     ["technical", "momentum", "market_risk"],
     "macro_topdown":         ["macro", "valuation", "momentum"],
     "options_flow_trader":   ["options", "technical", "momentum"],
