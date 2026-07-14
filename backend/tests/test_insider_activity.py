@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from unittest.mock import patch, MagicMock
 
-from backend.app.ingestion.insider_activity import (
+from app.ingestion.insider_activity import (
     compute,
     _parse_filing_xml,
     _insider_buy_score,
@@ -161,8 +161,8 @@ def _make_hit(accession: str, filename: str, cik: str) -> dict:
 
 def test_output_contract():
     hits = [_make_hit("0001140361-26-020871", "form4.xml", "0000320193")]
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
-         patch("backend.app.ingestion.insider_activity._fetch_filing_xml", return_value=BUY_XML):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
+         patch("app.ingestion.insider_activity._fetch_filing_xml", return_value=BUY_XML):
         out = compute("AAPL")
 
     assert set(out.keys()) == {"insider_buy_score", "institutional_flow", "net_insider_delta"}
@@ -174,8 +174,8 @@ def test_output_contract():
 
 def test_institutional_flow_is_zero():
     hits = [_make_hit("0001140361-26-020871", "form4.xml", "0000320193")]
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
-         patch("backend.app.ingestion.insider_activity._fetch_filing_xml", return_value=BUY_XML):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
+         patch("app.ingestion.insider_activity._fetch_filing_xml", return_value=BUY_XML):
         out = compute("AAPL")
     assert out["institutional_flow"] == 0.0
 
@@ -183,15 +183,15 @@ def test_institutional_flow_is_zero():
 # ── Validation ───────────────────────────────────────────────────────────────
 
 def test_no_filings_raises():
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=[]):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=[]):
         with pytest.raises(ValueError, match="No Form 4 filings"):
             compute("FAKE")
 
 
 def test_all_filings_unparseable_raises():
     hits = [_make_hit("0001140361-26-020871", "form4.xml", "0000320193")]
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
-         patch("backend.app.ingestion.insider_activity._fetch_filing_xml", return_value=MALFORMED_XML):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
+         patch("app.ingestion.insider_activity._fetch_filing_xml", return_value=MALFORMED_XML):
         with pytest.raises(ValueError, match="Could not parse"):
             compute("AAPL")
 
@@ -202,14 +202,14 @@ def test_fetch_xml_failure_skips_filing():
         _make_hit("0001140361-26-020872", "form4.xml", "0000320193"),
     ]
     # First returns None (network failure), second returns valid XML
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
-         patch("backend.app.ingestion.insider_activity._fetch_filing_xml", side_effect=[None, BUY_XML]):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=hits), \
+         patch("app.ingestion.insider_activity._fetch_filing_xml", side_effect=[None, BUY_XML]):
         out = compute("AAPL")
     assert out["insider_buy_score"] > 0.0
 
 
 def test_missing_id_field_skips_hit():
     hits = [{"_source": {"ciks": ["0000320193"]}}]  # no _id field
-    with patch("backend.app.ingestion.insider_activity._fetch_form4_filings", return_value=hits):
+    with patch("app.ingestion.insider_activity._fetch_form4_filings", return_value=hits):
         with pytest.raises(ValueError, match="Could not parse"):
             compute("AAPL")
