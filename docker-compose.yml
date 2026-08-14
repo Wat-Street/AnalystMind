@@ -27,6 +27,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql://analyst:analyst@db:5432/analystmind
     ports:

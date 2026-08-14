@@ -149,6 +149,9 @@ activemq-data/
 # SageMath parsed files
 *.sage.py
 
+# ML checkpoints (trained artifacts, not source)
+backend/app/ml/checkpoints/
+
 # Environments
 .env
 .envrc
